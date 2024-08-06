@@ -7,7 +7,7 @@
 #include "ui/edit/edit_vmess.h"
 #include "ui/edit/edit_trojan_vless.h"
 #include "ui/edit/edit_naive.h"
-#include "ui/edit/edit_hysteria.h"
+#include "ui/edit/edit_quic.h"
 #include "ui/edit/edit_custom.h"
 
 #include "fmt/includes.h"
@@ -32,7 +32,7 @@ DialogEditProfile::DialogEditProfile(const QString &_type, int profileOrGroupId,
     connect(ui->network, &QComboBox::currentTextChanged, this, [=](const QString &txt) {
         ui->network_box->setTitle(network_title_base.arg(txt));
         // 传输设置
-        if (txt == "tcp" || (!IS_NEKO_BOX && txt == "quic")) {
+        if (txt == "tcp") {
             ui->header_type->setVisible(true);
             ui->header_type_l->setVisible(true);
             ui->path->setVisible(true);
@@ -46,7 +46,7 @@ DialogEditProfile::DialogEditProfile(const QString &_type, int profileOrGroupId,
             ui->path_l->setVisible(true);
             ui->host->setVisible(false);
             ui->host_l->setVisible(false);
-        } else if (txt == "ws" || txt == "http") {
+        } else if (txt == "ws" || txt == "http" || txt == "httpupgrade") {
             ui->header_type->setVisible(false);
             ui->header_type_l->setVisible(false);
             ui->path->setVisible(true);
@@ -62,7 +62,7 @@ DialogEditProfile::DialogEditProfile(const QString &_type, int profileOrGroupId,
             ui->host_l->setVisible(false);
         }
         // 传输设置 ED
-        if (txt == "ws" && IS_NEKO_BOX) {
+        if (txt == "ws") {
             ui->ws_early_data_length->setVisible(true);
             ui->ws_early_data_length_l->setVisible(true);
             ui->ws_early_data_name->setVisible(true);
@@ -74,11 +74,7 @@ DialogEditProfile::DialogEditProfile(const QString &_type, int profileOrGroupId,
             ui->ws_early_data_name_l->setVisible(false);
         }
         // 传输设置 for NekoBox
-        if (IS_NEKO_BOX) {
-            if (!ui->utlsFingerprint->count()) ui->utlsFingerprint->addItems(Preset::SingBox::UtlsFingerPrint);
-        } else {
-            if (!ui->utlsFingerprint->count()) ui->utlsFingerprint->addItems(Preset::Xray::UtlsFingerPrint);
-        }
+        if (!ui->utlsFingerprint->count()) ui->utlsFingerprint->addItems(Preset::SingBox::UtlsFingerPrint);
         // 传输设置 是否可见
         int networkBoxVisible = 0;
         for (auto label: ui->network_box->findChildren<QLabel *>()) {
@@ -94,10 +90,8 @@ DialogEditProfile::DialogEditProfile(const QString &_type, int profileOrGroupId,
         if (txt == "tls") {
             ui->security_box->setVisible(true);
             ui->tls_camouflage_box->setVisible(true);
-            if (IS_NEKO_BOX) {
-                ui->reality_spx->hide();
-                ui->reality_spx_l->hide();
-            }
+            ui->reality_spx->hide();
+            ui->reality_spx_l->hide();
         } else {
             ui->security_box->setVisible(false);
             ui->tls_camouflage_box->setVisible(false);
@@ -120,7 +114,8 @@ DialogEditProfile::DialogEditProfile(const QString &_type, int profileOrGroupId,
         LOAD_TYPE("vmess")
         LOAD_TYPE("vless")
         LOAD_TYPE("naive")
-        LOAD_TYPE("hysteria")
+        LOAD_TYPE("hysteria2")
+        LOAD_TYPE("tuic")
         ui->type->addItem(tr("Custom (%1 outbound)").arg(software_core_name), "internal");
         ui->type->addItem(tr("Custom (%1 config)").arg(software_core_name), "internal-full");
         ui->type->addItem(tr("Custom (Extra Core)"), "custom");
@@ -176,8 +171,8 @@ void DialogEditProfile::typeSelected(const QString &newType) {
         auto _innerWidget = new EditNaive(this);
         innerWidget = _innerWidget;
         innerEditor = _innerWidget;
-    } else if (type == "hysteria") {
-        auto _innerWidget = new EditHysteria(this);
+    } else if (type == "hysteria2" || type == "tuic") {
+        auto _innerWidget = new EditQUIC(this);
         innerWidget = _innerWidget;
         innerEditor = _innerWidget;
     } else if (type == "custom" || type == "internal" || type == "internal-full") {
@@ -219,7 +214,11 @@ void DialogEditProfile::typeSelected(const QString &newType) {
         ui->host->setText(stream->host);
         ui->sni->setText(stream->sni);
         ui->alpn->setText(stream->alpn);
-        ui->utlsFingerprint->setCurrentText(stream->utlsFingerprint);
+        if (newEnt) {
+            ui->utlsFingerprint->setCurrentText(NekoGui::dataStore->utlsFingerprint);
+        } else {
+            ui->utlsFingerprint->setCurrentText(stream->utlsFingerprint);
+        }
         ui->insecure->setChecked(stream->allow_insecure);
         ui->header_type->setCurrentText(stream->header_type);
         ui->ws_early_data_name->setText(stream->ws_early_data_name);
@@ -276,47 +275,43 @@ void DialogEditProfile::typeSelected(const QString &newType) {
     ADD_ASTERISK(this)
 
     // 设置 for NekoBox
-    if (IS_NEKO_BOX) {
-        if (type == "vmess" || type == "vless") {
-            ui->packet_encoding->setVisible(true);
-            ui->packet_encoding_l->setVisible(true);
-        } else {
-            ui->packet_encoding->setVisible(false);
-            ui->packet_encoding_l->setVisible(false);
-        }
-        if (type == "vmess" || type == "vless" || type == "trojan") {
-            ui->network_l->setVisible(true);
-            ui->network->setVisible(true);
-            ui->network_box->setVisible(true);
-        } else {
-            ui->network_l->setVisible(false);
-            ui->network->setVisible(false);
-            ui->network_box->setVisible(false);
-        }
-        if (type == "vmess" || type == "vless" || type == "trojan" || type == "http") {
-            ui->security->setVisible(true);
-            ui->security_l->setVisible(true);
-        } else {
-            ui->security->setVisible(false);
-            ui->security_l->setVisible(false);
-        }
-        if (type == "vmess" || type == "vless" || type == "trojan" || type == "shadowsocks") {
-            ui->multiplex->setVisible(true);
-            ui->multiplex_l->setVisible(true);
-        } else {
-            ui->multiplex->setVisible(false);
-            ui->multiplex_l->setVisible(false);
-        }
-        // 设置 是否可见
-        int streamBoxVisible = 0;
-        for (auto label: ui->stream_box->findChildren<QLabel *>()) {
-            if (!label->isHidden()) streamBoxVisible++;
-        }
-        ui->stream_box->setVisible(streamBoxVisible);
+    if (type == "vmess" || type == "vless") {
+        ui->packet_encoding->setVisible(true);
+        ui->packet_encoding_l->setVisible(true);
     } else {
         ui->packet_encoding->setVisible(false);
         ui->packet_encoding_l->setVisible(false);
     }
+    if (type == "vmess" || type == "vless" || type == "trojan") {
+        ui->network_l->setVisible(true);
+        ui->network->setVisible(true);
+        ui->network_box->setVisible(true);
+    } else {
+        ui->network_l->setVisible(false);
+        ui->network->setVisible(false);
+        ui->network_box->setVisible(false);
+    }
+    if (type == "vmess" || type == "vless" || type == "trojan" || type == "http") {
+        ui->security->setVisible(true);
+        ui->security_l->setVisible(true);
+    } else {
+        ui->security->setVisible(false);
+        ui->security_l->setVisible(false);
+    }
+    if (type == "vmess" || type == "vless" || type == "trojan" || type == "shadowsocks") {
+        ui->multiplex->setVisible(true);
+        ui->multiplex_l->setVisible(true);
+    } else {
+        ui->multiplex->setVisible(false);
+        ui->multiplex_l->setVisible(false);
+    }
+
+    // 设置 是否可见
+    int streamBoxVisible = 0;
+    for (auto label: ui->stream_box->findChildren<QLabel *>()) {
+        if (!label->isHidden()) streamBoxVisible++;
+    }
+    ui->stream_box->setVisible(streamBoxVisible);
 
     // 载入 type 之后，有些类型没有右边的设置
     auto rightNoBox = (ui->stream_box->isHidden() && ui->network_box->isHidden() && ui->security_box->isHidden());
@@ -341,7 +336,7 @@ bool DialogEditProfile::onEnd() {
 
     // 左边
     ent->bean->name = ui->name->text();
-    ent->bean->serverAddress = ui->address->text();
+    ent->bean->serverAddress = ui->address->text().remove(' ');
     ent->bean->serverPort = ui->port->text().toInt();
 
     // 右边 stream

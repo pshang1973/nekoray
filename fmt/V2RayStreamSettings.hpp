@@ -8,7 +8,7 @@ namespace NekoGui_fmt {
         QString network = "tcp";
         QString security = "";
         QString packet_encoding = "";
-        // ws/http/grpc/tcp-http
+        // ws/http/grpc/tcp-http/httpupgrade
         QString path = "";
         QString host = "";
         // kcp/quic/tcp-http
@@ -48,8 +48,6 @@ namespace NekoGui_fmt {
             _add(new configItem("spx", &reality_spx, itemType::string));
             _add(new configItem("mux_s", &multiplex_status, itemType::integer));
         }
-
-        QJsonObject BuildStreamSettingsV2Ray();
 
         void BuildStreamSettingsSingBox(QJsonObject *outbound);
     };

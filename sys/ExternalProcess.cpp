@@ -53,14 +53,6 @@ namespace NekoGui_sys {
         }
 
         QProcess::setEnvironment(env);
-
-        if (NekoGui::dataStore->flag_linux_run_core_as_admin && dynamic_cast<CoreProcess *>(this) && program != "pkexec") {
-            arguments.prepend(program);
-            arguments.prepend("--keep-cwd");
-            program = "pkexec";
-        }
-
-        QProcess::setEnvironment(env);
         QProcess::start(program, arguments);
     }
 
@@ -149,15 +141,7 @@ namespace NekoGui_sys {
 
     void CoreProcess::Start() {
         show_stderr = false;
-        // set extra env
-        auto v2ray_asset_dir = NekoGui::FindCoreAsset("geoip.dat");
-        if (!v2ray_asset_dir.isEmpty()) {
-            v2ray_asset_dir = QFileInfo(v2ray_asset_dir).absolutePath();
-            env << "XRAY_LOCATION_ASSET=" + v2ray_asset_dir;
-        }
-        if (NekoGui::dataStore->core_ray_direct_dns) env << "NKR_CORE_RAY_DIRECT_DNS=1";
-        if (NekoGui::dataStore->core_ray_windows_disable_auto_interface) env << "NKR_CORE_RAY_WINDOWS_DISABLE_AUTO_INTERFACE=1";
-        //
+        // cwd: same as GUI, at ./config
         ExternalProcess::Start();
         write((NekoGui::dataStore->core_token + "\n").toUtf8());
     }

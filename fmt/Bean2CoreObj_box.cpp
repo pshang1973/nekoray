@@ -28,6 +28,9 @@ namespace NekoGui_fmt {
                 if (!host.isEmpty()) transport["host"] = QList2QJsonArray(host.split(","));
             } else if (network == "grpc") {
                 if (!path.isEmpty()) transport["service_name"] = path;
+            } else if (network == "httpupgrade") {
+                if (!path.isEmpty()) transport["path"] = path;
+                if (!host.isEmpty()) transport["host"] = host;
             }
             outbound->insert("transport", transport);
         } else if (header_type == "http") {
@@ -52,14 +55,14 @@ namespace NekoGui_fmt {
             if (!alpn.trimmed().isEmpty()) {
                 tls["alpn"] = QList2QJsonArray(alpn.split(","));
             }
-            auto fp = utlsFingerprint.isEmpty() ? NekoGui::dataStore->utlsFingerprint : utlsFingerprint;
+            QString fp = utlsFingerprint;
             if (!reality_pbk.trimmed().isEmpty()) {
                 tls["reality"] = QJsonObject{
                     {"enabled", true},
                     {"public_key", reality_pbk},
                     {"short_id", reality_sid.split(",")[0]},
                 };
-                if (fp.isEmpty()) fp = "chrome";
+                if (fp.isEmpty()) fp = "random";
             }
             if (!fp.isEmpty()) {
                 tls["utls"] = QJsonObject{
@@ -70,12 +73,8 @@ namespace NekoGui_fmt {
             outbound->insert("tls", tls);
         }
 
-        if (!packet_encoding.isEmpty()) {
-            auto pkt = packet_encoding;
-            if (pkt == "packet") pkt = "packetaddr";
-            outbound->insert("packet_encoding", pkt);
-        } else if (outbound->value("type").toString() == "vless") {
-            outbound->insert("packet_encoding", "");
+        if (outbound->value("type").toString() == "vmess" || outbound->value("type").toString() == "vless") {
+            outbound->insert("packet_encoding", packet_encoding);
         }
     }
 
@@ -173,34 +172,56 @@ namespace NekoGui_fmt {
         return result;
     }
 
-    CoreObjOutboundBuildResult HysteriaBean::BuildCoreObjSingBox() {
+    CoreObjOutboundBuildResult QUICBean::BuildCoreObjSingBox() {
         CoreObjOutboundBuildResult result;
 
         QJsonObject coreTlsObj{
             {"enabled", true},
+            {"disable_sni", disableSni},
             {"insecure", allowInsecure},
             {"certificate", caText.trimmed()},
             {"server_name", sni},
         };
-        if (!alpn.trimmed().isEmpty()) coreTlsObj["alpn"] = QJsonArray{alpn};
+        if (!alpn.trimmed().isEmpty()) coreTlsObj["alpn"] = QList2QJsonArray(alpn.split(","));
+        if (proxy_type == proxy_Hysteria2) coreTlsObj["alpn"] = "h3";
 
-        QJsonObject coreHysteriaObj{
-            {"type", "hysteria"},
+        QJsonObject outbound{
             {"server", serverAddress},
             {"server_port", serverPort},
-            {"obfs", obfsPassword},
-            {"disable_mtu_discovery", disableMtuDiscovery},
-            {"recv_window", streamReceiveWindow},
-            {"recv_window_conn", connectionReceiveWindow},
-            {"up_mbps", uploadMbps},
-            {"down_mbps", downloadMbps},
             {"tls", coreTlsObj},
         };
 
-        if (authPayloadType == hysteria_auth_base64) coreHysteriaObj["auth"] = authPayload;
-        if (authPayloadType == hysteria_auth_string) coreHysteriaObj["auth_str"] = authPayload;
+        if (proxy_type == proxy_Hysteria2) {
+            outbound["type"] = "hysteria2";
+            outbound["password"] = password;
+            outbound["up_mbps"] = uploadMbps;
+            outbound["down_mbps"] = downloadMbps;
 
-        result.outbound = coreHysteriaObj;
+            if (!hopPort.trimmed().isEmpty()) {
+                outbound["hop_ports"] = hopPort;
+                outbound["hop_interval"] = hopInterval;
+            }
+            if (!obfsPassword.isEmpty()) {
+                outbound["obfs"] = QJsonObject{
+                    {"type", "salamander"},
+                    {"password", obfsPassword},
+                };
+            }
+        } else if (proxy_type == proxy_TUIC) {
+            outbound["type"] = "tuic";
+            outbound["uuid"] = uuid;
+            outbound["password"] = password;
+            outbound["congestion_control"] = congestionControl;
+            if (uos) {
+                outbound["udp_over_stream"] = true;
+            } else {
+                outbound["udp_relay_mode"] = udpRelayMode;
+            }
+            outbound["zero_rtt_handshake"] = zeroRttHandshake;
+            if (!heartbeat.trimmed().isEmpty()) outbound["heartbeat"] = heartbeat;
+        }
+
+        result.outbound = outbound;
         return result;
     }
 

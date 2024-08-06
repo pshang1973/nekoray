@@ -12,7 +12,7 @@
             {
                 "tag": "dns-remote",
                 "address": "8.8.8.8",
-                "detour": "nekoray-socks"
+                "detour": "neko-socks"
             },
             {
                 "tag": "dns-direct",
@@ -29,6 +29,13 @@
             }
         ],
         "rules": [
+            {
+                "query_type": [
+                    32,
+                    33
+                ],
+                "server": "dns-block"
+            },
             {
                 "domain_suffix": [
                     ".lan"
@@ -68,7 +75,7 @@
     "outbounds": [
         {
             "type": "socks",
-            "tag": "nekoray-socks",
+            "tag": "neko-socks",
             "udp_fragment": true,
             //%SOCKS_USER_PASS%
             "server": "127.0.0.1",
@@ -132,9 +139,10 @@
                     "nekobox_core.exe"
                 ],
                 "outbound": "direct"
-            },
+            }
             //%PROCESS_NAME_RULE%
             //%CIDR_RULE%
+            ,
             {
                 "port": 53,
                 "outbound": "dns-out"

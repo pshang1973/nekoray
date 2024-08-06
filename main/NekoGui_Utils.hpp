@@ -8,8 +8,8 @@
 
 //
 
-inline QString software_name = "NekoRay";
-inline QString software_core_name = "Xray";
+inline QString software_name = "NekoBox";
+inline QString software_core_name = "sing-box";
 
 // Main Functions
 
@@ -27,6 +27,12 @@ inline std::function<void(QString, QString)> MW_dialog_message;
 
 class QThread;
 inline QThread *DS_cores;
+
+// Timers
+
+class QTimer;
+inline QTimer *TM_auto_update_subsctiption;
+inline std::function<void(int)> TM_auto_update_subsctiption_Reset_Minute;
 
 // String
 

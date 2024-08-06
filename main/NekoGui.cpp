@@ -12,6 +12,9 @@
 #ifdef Q_OS_WIN
 #include "sys/windows/guihelper.h"
 #else
+#ifdef Q_OS_LINUX
+#include <sys/linux/LinuxCap.h>
+#endif
 #include <unistd.h>
 #endif
 
@@ -62,10 +65,11 @@ namespace NekoGui_ConfigItem {
         }
     }
 
-    QJsonObject JsonStore::ToJson() {
+    QJsonObject JsonStore::ToJson(const QStringList &without) {
         QJsonObject object;
         for (const auto &_item: _map) {
             auto item = _item.get();
+            if (without.contains(item->name)) continue;
             switch (item->type) {
                 case itemType::string:
                     // Allow Empty
@@ -226,14 +230,13 @@ namespace NekoGui {
         _add(new configItem("extraCore", dynamic_cast<JsonStore *>(extraCore), itemType::jsonStore));
         _add(new configItem("inbound_auth", dynamic_cast<JsonStore *>(inbound_auth), itemType::jsonStore));
 
-        _add(new configItem("user_agent", &user_agent, itemType::string));
+        _add(new configItem("user_agent2", &user_agent, itemType::string));
         _add(new configItem("test_url", &test_latency_url, itemType::string));
         _add(new configItem("test_url_dl", &test_download_url, itemType::string));
         _add(new configItem("test_dl_timeout", &test_download_timeout, itemType::integer));
         _add(new configItem("current_group", &current_group, itemType::integer));
         _add(new configItem("inbound_address", &inbound_address, itemType::string));
         _add(new configItem("inbound_socks_port", &inbound_socks_port, itemType::integer));
-        _add(new configItem("inbound_http_port", &inbound_http_port, itemType::integer));
         _add(new configItem("log_level", &log_level, itemType::string));
         _add(new configItem("mux_protocol", &mux_protocol, itemType::string));
         _add(new configItem("mux_concurrency", &mux_concurrency, itemType::integer));
@@ -244,7 +247,6 @@ namespace NekoGui {
         _add(new configItem("theme", &theme, itemType::string));
         _add(new configItem("custom_inbound", &custom_inbound, itemType::string));
         _add(new configItem("custom_route", &custom_route_global, itemType::string));
-        _add(new configItem("v2ray_asset_dir", &v2ray_asset_dir, itemType::string));
         _add(new configItem("sub_use_proxy", &sub_use_proxy, itemType::boolean));
         _add(new configItem("remember_id", &remember_id, itemType::integer));
         _add(new configItem("remember_enable", &remember_enable, itemType::boolean));
@@ -271,7 +273,7 @@ namespace NekoGui {
         _add(new configItem("sp_format", &system_proxy_format, itemType::string));
         _add(new configItem("sub_clear", &sub_clear, itemType::boolean));
         _add(new configItem("sub_insecure", &sub_insecure, itemType::boolean));
-        _add(new configItem("enable_js_hook", &enable_js_hook, itemType::integer));
+        _add(new configItem("sub_auto_update", &sub_auto_update, itemType::integer));
         _add(new configItem("log_ignore", &log_ignore, itemType::stringList));
         _add(new configItem("start_minimal", &start_minimal, itemType::boolean));
         _add(new configItem("max_log_line", &max_log_line, itemType::integer));
@@ -280,12 +282,7 @@ namespace NekoGui {
         _add(new configItem("core_box_clash_api", &core_box_clash_api, itemType::integer));
         _add(new configItem("core_box_clash_api_secret", &core_box_clash_api_secret, itemType::string));
         _add(new configItem("core_box_underlying_dns", &core_box_underlying_dns, itemType::string));
-        _add(new configItem("core_ray_direct_dns", &core_ray_direct_dns, itemType::boolean));
-        _add(new configItem("core_ray_freedom_domainStrategy", &core_ray_freedom_domainStrategy, itemType::string));
         _add(new configItem("vpn_internal_tun", &vpn_internal_tun, itemType::boolean));
-#ifdef Q_OS_WIN
-        _add(new configItem("core_ray_windows_disable_auto_interface", &core_ray_windows_disable_auto_interface, itemType::boolean));
-#endif
     }
 
     void DataStore::UpdateStartedId(int id) {
@@ -297,6 +294,18 @@ namespace NekoGui {
             remember_id = -1919;
             Save();
         }
+    }
+
+    QString DataStore::GetUserAgent(bool isDefault) const {
+        if (user_agent.isEmpty()) {
+            isDefault = true;
+        }
+        if (isDefault) {
+            QString version = SubStrBefore(NKR_VERSION, "-");
+            if (!version.contains(".")) version = "2.0";
+            return "NekoBox/PC/" + version + " (Prefer ClashMeta Format)";
+        }
+        return user_agent;
     }
 
     // preset routing
@@ -312,15 +321,11 @@ namespace NekoGui {
             block_domain =
                 "geosite:category-ads-all\n"
                 "domain:appcenter.ms\n"
-                "domain:app-measurement.com\n"
                 "domain:firebase.io\n"
-                "domain:crashlytics.com\n"
-                "domain:google-analytics.com";
+                "domain:crashlytics.com\n";
         }
-        if (IS_NEKO_BOX) {
-            if (!Preset::SingBox::DomainStrategy.contains(domain_strategy)) domain_strategy = "";
-            if (!Preset::SingBox::DomainStrategy.contains(outbound_domain_strategy)) outbound_domain_strategy = "";
-        }
+        if (!Preset::SingBox::DomainStrategy.contains(domain_strategy)) domain_strategy = "";
+        if (!Preset::SingBox::DomainStrategy.contains(outbound_domain_strategy)) outbound_domain_strategy = "";
         _add(new configItem("direct_ip", &this->direct_ip, itemType::string));
         _add(new configItem("direct_domain", &this->direct_domain, itemType::string));
         _add(new configItem("proxy_ip", &this->proxy_ip, itemType::string));
@@ -340,6 +345,7 @@ namespace NekoGui {
         _add(new configItem("sniffing_mode", &this->sniffing_mode, itemType::integer));
         _add(new configItem("use_dns_object", &this->use_dns_object, itemType::boolean));
         _add(new configItem("dns_object", &this->dns_object, itemType::string));
+        _add(new configItem("dns_final_out", &this->dns_final_out, itemType::string));
     }
 
     QString Routing::DisplayRouting() const {
@@ -406,17 +412,16 @@ namespace NekoGui {
         return !username.trimmed().isEmpty() && !password.trimmed().isEmpty();
     }
 
+    // System Utils
+
     QString FindCoreAsset(const QString &name) {
-        QStringList search{NekoGui::dataStore->v2ray_asset_dir};
+        QStringList search{};
         search << QApplication::applicationDirPath();
         search << "/usr/share/sing-geoip";
         search << "/usr/share/sing-geosite";
-        search << "/usr/share/xray";
-        search << "/usr/local/share/xray";
-        search << "/opt/xray";
-        search << "/usr/share/v2ray";
-        search << "/usr/local/share/v2ray";
-        search << "/opt/v2ray";
+        search << "/usr/share/sing-box";
+        search << "/usr/lib/nekobox";
+        search << "/usr/share/nekobox";
         for (const auto &dir: search) {
             if (dir.isEmpty()) continue;
             QFileInfo asset(dir + "/" + name);
@@ -427,15 +432,26 @@ namespace NekoGui {
         return {};
     }
 
+    QString FindNekoBoxCoreRealPath() {
+        auto fn = QApplication::applicationDirPath() + "/nekobox_core";
+        auto fi = QFileInfo(fn);
+        if (fi.isSymLink()) return fi.symLinkTarget();
+        return fn;
+    }
+
     short isAdminCache = -1;
 
-    bool isAdmin() {
+    // IsAdmin 主要判断：有无权限启动 Tun
+    bool IsAdmin() {
         if (isAdminCache >= 0) return isAdminCache;
 
-        auto admin = NekoGui::dataStore->flag_linux_run_core_as_admin;
+        bool admin = false;
 #ifdef Q_OS_WIN
         admin = Windows_IsInAdmin();
 #else
+#ifdef Q_OS_LINUX
+        admin |= Linux_GetCapString(FindNekoBoxCoreRealPath()).contains("cap_net_admin");
+#endif
         admin |= geteuid() == 0;
 #endif
 

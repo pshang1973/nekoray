@@ -12,16 +12,8 @@
         <translation>启用</translation>
     </message>
     <message>
-        <source>HTTP Listen Port</source>
-        <translation>HTTP 监听端口</translation>
-    </message>
-    <message>
         <source>Listen Address</source>
         <translation>监听地址</translation>
-    </message>
-    <message>
-        <source>Socks Listen Port</source>
-        <translation>Socks 监听端口</translation>
     </message>
     <message>
         <source>concurrency</source>
@@ -70,14 +62,6 @@
     <message>
         <source>Custom Inbound</source>
         <translation>自定义入站</translation>
-    </message>
-    <message>
-        <source>Asset Location</source>
-        <translation>资源文件路径</translation>
-    </message>
-    <message>
-        <source>Default: dir of &quot;nekoray&quot;</source>
-        <translation>默认值：和 nekoray 同路径</translation>
     </message>
     <message>
         <source>Concurrent</source>
@@ -144,18 +128,6 @@
         <translation>取消</translation>
     </message>
     <message>
-        <source>Switch core</source>
-        <translation>切换核心</translation>
-    </message>
-    <message>
-        <source>Confirmation</source>
-        <translation>确认</translation>
-    </message>
-    <message>
-        <source>Switching the core to %1, click &quot;Yes&quot; to complete the switch and the program will restart. This feature may be unstable, please do not switch frequently.</source>
-        <translation>将核心切换到 %1。点击 &quot;是&quot; 完成切换，程序将重新启动。此功能可能不稳定，请不要频繁切换。</translation>
-    </message>
-    <message>
         <source>System proxy format</source>
         <translation>系统代理格式</translation>
     </message>
@@ -164,16 +136,20 @@
         <translation>高级系统代理设置。请选择一种格式。</translation>
     </message>
     <message>
+        <source>Old Share Link Format</source>
+        <translation>旧分享链接格式</translation>
+    </message>
+    <message>
+        <source>Share VMess Link with v2rayN Format</source>
+        <translation>用 v2rayN 的格式分享 VMess 链接</translation>
+    </message>
+    <message>
         <source>Clear servers before updating subscription</source>
         <translation>更新订阅前清除服务器</translation>
     </message>
     <message>
         <source>Ignore TLS errors when updating subscription</source>
         <translation>更新订阅时忽略 TLS 错误</translation>
-    </message>
-    <message>
-        <source>Enable hook.js</source>
-        <translation>启用 hook.js 功能</translation>
     </message>
     <message>
         <source>Hide dashboard at startup</source>
@@ -212,18 +188,6 @@
         <translation>覆盖底层 DNS</translation>
     </message>
     <message>
-        <source>It is recommended to leave it blank, but it sometimes does not work, at this time you can set this option.
-For NekoRay, this rewrites the underlying(localhost) DNS in Tun Mode.
-For NekoBox, this rewrites the underlying(localhost) DNS in Tun Mode, normal mode, and also URL Test.</source>
-        <translation>建议留空，但有时会出现问题，这时可以设置这个选项。
-对于 NekoRay 来说，在 Tun 模式下会重写 underlying(localhost) DNS。
-对于 NekoBox 来说，在 Tun 模式、正常模式和 URL 测试中会重写 underlying(localhost) DNS。</translation>
-    </message>
-    <message>
-        <source>If you Tun Mode is not working, try to change this option.</source>
-        <translation>如果您的 Tun 模式有问题，请尝试更改此选项。</translation>
-    </message>
-    <message>
         <source>Default On</source>
         <translation>默认开启</translation>
     </message>
@@ -242,6 +206,18 @@ For NekoBox, this rewrites the underlying(localhost) DNS in Tun Mode, normal mod
     <message>
         <source>Timeout (s)</source>
         <translation>超时（秒）</translation>
+    </message>
+    <message>
+        <source>Automatic update</source>
+        <translation>自动更新订阅</translation>
+    </message>
+    <message>
+        <source>Interval (minute, invalid if less than 30)</source>
+        <translation>时间间隔（分钟，少于 30 分钟无效）</translation>
+    </message>
+    <message>
+        <source>Mixed (SOCKS+HTTP) Listen Port</source>
+        <translation>Mixed (SOCKS+HTTP) 监听端口</translation>
     </message>
 </context>
 <context>
@@ -309,6 +285,18 @@ For NekoBox, this rewrites the underlying(localhost) DNS in Tun Mode, normal mod
     <message>
         <source>Clear</source>
         <translation>清除</translation>
+    </message>
+    <message>
+        <source>Skip automatic update</source>
+        <translation>跳过自动更新</translation>
+    </message>
+    <message>
+        <source>Common</source>
+        <translation>通用</translation>
+    </message>
+    <message>
+        <source>Share</source>
+        <translation>分享</translation>
     </message>
 </context>
 <context>
@@ -460,25 +448,6 @@ For NekoBox, this rewrites the underlying(localhost) DNS in Tun Mode, normal mod
     <message>
         <source>Reality short id. Accept only one value.</source>
         <translation>Reality short id. 只接受一个值。</translation>
-    </message>
-</context>
-<context>
-    <name>DialogFirstSetup</name>
-    <message>
-        <source>First time setup</source>
-        <translation>首次设置</translation>
-    </message>
-    <message>
-        <source>It looks like you are using this software for the first time, please select a core.
-
-These settings can be changed later.</source>
-        <translation>看来您是第一次使用该软件，请选择内核。
-
-这些设置可以稍后更改。</translation>
-    </message>
-    <message>
-        <source>Quit</source>
-        <translation>退出</translation>
     </message>
 </context>
 <context>
@@ -697,6 +666,10 @@ For more information, see the document &quot;Configuration/DNS&quot;.</source>
 如果默认值不工作，可以尝试更改为 &quot;223.5.5.5&quot;。
 更多信息，请参阅文档 &quot;配置/DNS&quot;。</translation>
     </message>
+    <message>
+        <source>Final DNS Out</source>
+        <translation>默认 DNS 出站</translation>
+    </message>
 </context>
 <context>
     <name>DialogVPNSettings</name>
@@ -836,18 +809,49 @@ This needs to be run NekoBox with administrator privileges.</source>
     </message>
 </context>
 <context>
-    <name>EditHysteria</name>
+    <name>EditNaive</name>
+    <message>
+        <source>Protocol</source>
+        <translation>协议</translation>
+    </message>
+    <message>
+        <source>Password</source>
+        <translation>密码</translation>
+    </message>
+    <message>
+        <source>Extra headers</source>
+        <translation>附加标头</translation>
+    </message>
+    <message>
+        <source>SNI</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Username</source>
+        <translation>用户名</translation>
+    </message>
     <message>
         <source>Certificate</source>
         <translation>证书</translation>
     </message>
     <message>
-        <source>Auth Type</source>
-        <translation>认证类型</translation>
+        <source>Insecure concurrency</source>
+        <translation>不安全并发</translation>
     </message>
     <message>
-        <source>Protocol</source>
-        <translation>协议</translation>
+        <source>Disable logs</source>
+        <translation>关闭日志</translation>
+    </message>
+    <message>
+        <source>Turn on this option if your connection is lost after a while</source>
+        <translation>如果连接一段时间后出现中断，请打开此选项</translation>
+    </message>
+</context>
+<context>
+    <name>EditQUIC</name>
+    <message>
+        <source>Certificate</source>
+        <translation>证书</translation>
     </message>
     <message>
         <source>Download (Mbps)</source>
@@ -882,39 +886,36 @@ This needs to be run NekoBox with administrator privileges.</source>
         <translation>SNI</translation>
     </message>
     <message>
-        <source>Auth Payload</source>
-        <translation>认证有效载荷</translation>
-    </message>
-</context>
-<context>
-    <name>EditNaive</name>
-    <message>
-        <source>Protocol</source>
-        <translation>协议</translation>
+        <source>Generate UUID</source>
+        <translation>生成 UUID</translation>
     </message>
     <message>
         <source>Password</source>
         <translation>密码</translation>
     </message>
     <message>
-        <source>Extra headers</source>
-        <translation>附加标头</translation>
+        <source>Zero Rtt Handshake</source>
+        <translation>0-Rtt 握手</translation>
     </message>
     <message>
-        <source>SNI</source>
-        <translation></translation>
+        <source>UDP Relay Mode</source>
+        <translation>UDP 中继模式</translation>
     </message>
     <message>
-        <source>Username</source>
-        <translation>用户名</translation>
+        <source>Congestion Control</source>
+        <translation>拥塞控制</translation>
     </message>
     <message>
-        <source>Certificate</source>
-        <translation>证书</translation>
+        <source>Heartbeat</source>
+        <translation>心跳包发送间隔</translation>
     </message>
     <message>
-        <source>Insecure concurrency</source>
-        <translation>不安全并发</translation>
+        <source>Disable SNI</source>
+        <translation>不发送服务器名称指示</translation>
+    </message>
+    <message>
+        <source>Force use external core</source>
+        <translation>强制使用外部核心</translation>
     </message>
 </context>
 <context>
@@ -1162,10 +1163,6 @@ This needs to be run NekoBox with administrator privileges.</source>
         <translation>错误</translation>
     </message>
     <message>
-        <source>Default</source>
-        <translation type="vanished">默认</translation>
-    </message>
-    <message>
         <source>Confirmation</source>
         <translation>确认</translation>
     </message>
@@ -1176,14 +1173,6 @@ This needs to be run NekoBox with administrator privileges.</source>
     <message>
         <source>Imported %1 profile(s)</source>
         <translation>导入了 %1 个配置</translation>
-    </message>
-    <message>
-        <source>Running: %1</source>
-        <translation>正在运行: %1</translation>
-    </message>
-    <message>
-        <source>None</source>
-        <translation>无</translation>
     </message>
     <message>
         <source>Unavailable</source>
@@ -1212,10 +1201,6 @@ This needs to be run NekoBox with administrator privileges.</source>
     <message>
         <source>Testing</source>
         <translation>正在测试</translation>
-    </message>
-    <message>
-        <source>Http inbound is not enabled, can&apos;t set system proxy.</source>
-        <translation>HTTP 入站未启用，无法设置系统代理。</translation>
     </message>
     <message>
         <source>Update</source>
@@ -1288,10 +1273,6 @@ End: %2</source>
         <translation>删除不可用的配置</translation>
     </message>
     <message>
-        <source>Settings</source>
-        <translation>设置</translation>
-    </message>
-    <message>
         <source>New profile</source>
         <translation>手动输入配置</translation>
     </message>
@@ -1352,8 +1333,8 @@ End: %2</source>
         <translation>启用系统代理</translation>
     </message>
     <message>
-        <source>Enable VPN</source>
-        <translation>启用 VPN</translation>
+        <source>Enable Tun</source>
+        <translation>启用 Tun</translation>
     </message>
     <message>
         <source>Tun Settings changed</source>
@@ -1512,6 +1493,10 @@ Split by line.</source>
     <message>
         <source>Test Options</source>
         <translation>测试选项</translation>
+    </message>
+    <message>
+        <source>Stop Testing</source>
+        <translation>停止测试</translation>
     </message>
 </context>
 <context>
